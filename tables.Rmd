@@ -1,0 +1,87 @@
+---
+title: "First_report"
+output:
+  word_document:
+    toc: true
+  html_document:
+    toc: true
+    theme: readable
+date: "2024-08-20"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r }
+Migraine<-readRDS("migraine.rds")
+positive_cases<-readRDS("positive_cases.rds")
+library(gtsummary)
+library(tidyverse)
+Migraine<-Migraine[-136,]
+Migraine <- Migraine %>%
+  mutate(
+    age_group = case_when(
+      age >= 18 & age <= 20 ~ "18-20",
+      age >= 21 & age <= 24 ~ "21-24",
+      age >= 25 & age <= 30 ~ "25-30"))
+```
+
+## Demographic data
+
+
+
+```{r , echo=FALSE}
+Migraine %>%
+  select(sex,age_group,academic_level,family_history,smoking) %>%
+  tbl_summary(type = list(family_history~"categorical",smoking~"categorical"))
+```
+
+## prevalance of migraine using ID migraine criteria
+
+```{r}
+Migraine %>% select(id_migraine,migraine_test) %>% tbl_summary(by=migraine_test)
+```
+## prevelance of migraine screening section
+
+```{r}
+Migraine %>%
+  select(sex,age_group,academic_level,family_history,smoking,migraine_test) %>%
+  tbl_summary(by=migraine_test,type = list(family_history~"categorical",smoking~"categorical"))
+
+```
+
+## trigerring factors for migraine
+
+```{r}
+Migraine<- Migraine %>% mutate_at(vars(sunlight,pressure,noise,exams,reading,eathabit,fasting,period,irregular_sleep,excercise,tobacco,migraine_test),as.factor)
+positive_cases %>%
+  select(sunlight,pressure,noise,exams,reading,eathabit,fasting,period,irregular_sleep,excercise,tobacco) %>% tbl_summary(type=list(sunlight~"categorical",pressure~"categorical",noise~"categorical",exams~"categorical",reading~"categorical",eathabit~"categorical",fasting~"categorical",period~"categorical",irregular_sleep~"categorical",excercise~"categorical",tobacco~"categorical"))
+```
+## relieving factors
+
+```{r}
+positive_cases %>% select(relieve) %>% tbl_summary()
+```
+## associated symptoms
+```{r}
+positive_cases %>% select(symptoms) %>% tbl_summary()
+```
+
+## severity of headache
+```{r}
+positive_cases %>% select(intensity) %>% tbl_summary()
+```
+
+## impact of academic performance
+
+```{r}
+positive_cases %>% select(academic_impact) %>% tbl_summary()
+```
+

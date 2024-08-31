@@ -1,0 +1,128 @@
+---
+title: "migraine"
+output: html_document
+date: "2024-08-18"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+> ".. asking a question that can be answered with data, collecting and cleaning the data, studying the data, creating models to help understand and answer the question, and sharing the answer to the question with other people.":
+```
+### Getting the data
+
+We're going to read in a dataset about migraine that is located in our `raw_data`` folder
+
+
+```{r}
+library(readr)
+Migraine <- read_csv("raw_data/انتشار الصداع النصفي بين طلاب الطب في جامعة العلوم والتقانة (Responses) - Form Responses 1.csv")
+
+```
+### Explore the data
+
+```{r}
+Migraine
+```
+###delete timestamp column
+```{r}
+library(dplyr)
+Migraine<- Migraine %>% select(-Timestamp)
+```
+
+###rename the variables
+```{r}
+Migraine<- Migraine %>%
+  rename(accept ="هل توافق على المشاركة في هذه الدراسة البحثية؟",
+         sex="١. الجنس:",age="٢. العمر:",academic_level="٣. السنة الأكاديمية:",
+         family_history="٤.  هل يوجد أحد في عائلتك يعاني من الصداع النصفي؟" ,
+         smoking="٥.  هل تدخن؟" ,twice_year="القسم الثاني: فحص الصداع\n\n  ١. هل كنت تعاني من صداع متكرر أكثر من مرتين في العام الماضي؟",
+         daily_headache="٢. في الأشهر الثلاثة الماضية، هل أثر الصداع على نشاطاتك الاجتماعية أو المهنية أو الدراسية أو اليومية لمدة يوم أو أكثر؟",
+         gi_distress="٣. هل عانيت من اضطراب في المعدة أو غثيان أو تقيؤ أثناء الصداع؟",
+         photosensitive="٤. هل كنت تعاني من رهاب الضوء (حساسية للضوء) عندما كان لديك صداع؟",
+         onset="القسم الثالث: خصائص الصداع\n\n  ١. عمر بدء الصداع:",
+         freq="٢. تكرار الصداع:",duration="٣. مدة الصداع:",symptoms="٤. الأعراض المصاحبة مع الصداع:",
+         sunlight="٥. عوامل تحفيزالصداع:   [التعرض للشمس]",pressure="٥. عوامل تحفيزالصداع:   [الإجهاد العاطفي أو القلق]",
+         noise="٥. عوامل تحفيزالصداع:   [الضوضاء]",exams="٥. عوامل تحفيزالصداع:   [الامتحانات]",
+         reading="٥. عوامل تحفيزالصداع:   [القراءة لفترات طويلة]",eathabit="٥. عوامل تحفيزالصداع:   [عادات الأكل]",
+         fasting= "٥. عوامل تحفيزالصداع:   [الصيام]",period="٥. عوامل تحفيزالصداع:   [الدورة الشهرية]",
+         irregular_sleep="٥. عوامل تحفيزالصداع:   [النوم غير المنتظم]",
+         excercise="٥. عوامل تحفيزالصداع:   [النشاط البدني]",tobacco= "٥. عوامل تحفيزالصداع:   [التدخين]",
+         relieve="٦. عوامل تخفيف الصداع:",intensity="٧. شدة الصداع على مقياس من 0-3:",
+         academic_impact="٨. تأثير الصداع على الأداء الأكاديمي:" )
+```
+
+###rename observations
+
+```{r}
+Migraine<-Migraine %>%
+  mutate(accept=recode(accept,  نعم="yes",لا="no"),
+         sex=recode(sex,ذكر="male",أنثى="female"),
+         academic_level=recode(academic_level,"السنة الأولى"="first","السنة الثانية"="second","السنة الثالثة"="third","السنة الخامسة"="fifth","السنة الرابعة"="fourth"),
+         family_history=recode(family_history,  نعم="yes",لا="no"),
+         smoking=recode(smoking,  نعم="yes",لا="no"),
+         twice_year=recode(twice_year,  نعم="yes",لا="no"),
+         daily_headache=recode(daily_headache,  نعم="yes",لا="no"),
+         gi_distress=recode(gi_distress,  نعم="yes",لا="no"),
+         photosensitive=recode(photosensitive,  نعم="yes",لا="no"),
+         sunlight=recode(sunlight,  نعم="yes",لا="no"),
+         pressure=recode(pressure,  نعم="yes",لا="no"),
+         noise=recode(noise,  نعم="yes",لا="no"),
+         exams=recode(exams,  نعم="yes",لا="no"),
+         reading=recode(reading,  نعم="yes",لا="no"),
+         eathabit=recode(eathabit,  نعم="yes",لا="no"),
+         fasting=recode(fasting,  نعم="yes",لا="no"),
+         period=recode(period,  نعم="yes",لا="no"),
+         irregular_sleep=recode(irregular_sleep,  نعم="yes",لا="no"),
+         excercise=recode(excercise,  نعم="yes",لا="no"),
+         tobacco=recode(tobacco,  نعم="yes",لا="no"),
+         onset=recode(onset,"أقل من 15 سنة"="less than 15y","15-20 سنة"="15-20y","أكثر من 20 سنة"="more than 20","لا شيء"="nothing"),
+         symptoms=recode(symptoms,"غثيان"="nausea","تقيؤ"="vomiting","رهاب الضوء"="photophobia","رهاب الصوت (حساسية للصوت)"="phonophobia","انزعاج في البطن"="GI distress","لا شيء"="nothing","انزعاج في البطن, لا شيء"="GI distress","تقيؤ, رهاب الصوت (حساسية للصوت)"="phonophobia,vomiting","رهاب الصوت (حساسية للصوت), انزعاج في البطن"="phonophobia,GI distress",
+                         "رهاب الصوت (حساسية للصوت), لا شيء"="phonophobia","رهاب الضوء, انزعاج في البطن"="photophobia,GI distress","رهاب الضوء, رهاب الصوت (حساسية للصوت)"="photophobia,phonophobia","رهاب الضوء, رهاب الصوت (حساسية للصوت), انزعاج في البطن"="photophobia,phonophobia,GI distress","رهاب الضوء, لا شيء"="photophobia","غثيان, انزعاج في البطن"="nausea,GI distress",
+                        "غثيان, تقيؤ"="nausea,vomiting","غثيان, تقيؤ, انزعاج في البطن"="nausea,vomiting,GI distress","غثيان, تقيؤ, رهاب الضوء, رهاب الصوت (حساسية للصوت)"="nausea,vomiting,photophobia,phonophobia","غثيان, تقيؤ, رهاب الضوء, رهاب الصوت (حساسية للصوت), انزعاج في البطن"="nausea,vomiting,photophobia,phonophobia,GI distress","غثيان, رهاب الصوت (حساسية للصوت), انزعاج في البطن"="nausea,phonophobia,GI distress",
+                        "غثيان, رهاب الضوء"="nausea,photophobia","غثيان, رهاب الضوء, انزعاج في البطن"="nausea,photophobia,GI distress","غثيان, رهاب الضوء, رهاب الصوت (حساسية للصوت)"="nausea,photophobia,phonophobia","غثيان, رهاب الضوء, رهاب الصوت (حساسية للصوت), انزعاج في البطن"="nausea,photophobia,phonophobia,GI distress","غثيان, رهاب الضوء, رهاب الصوت (حساسية للصوت), لا شيء"="nausea,photophobia,phonophobia","غثيان, لا شيء"="nausea",
+                        "غثيان, تقيؤ, رهاب الصوت (حساسية للصوت), انزعاج في البطن "="nausea,vomiting,phonophobia,GI distress","غثيان, تقيؤ, رهاب الضوء, انزعاج في البطن"="nausea,vomiting,photophobia,GI distress"),
+         relieve=recode(relieve,"النوم أو الراحة"="rest","التدليك"="massage","الأدوية المسكنة"="analgesics","أخرى"="others","الأدوية المسكنة, أخرى"="analgesics,others","التدليك, الأدوية المسكنة "="massage,analgesics","النوم أو الراحة, أخرى"="rest,others","النوم أو الراحة, الأدوية المسكنة" ="rest,analgesics","النوم أو الراحة, الأدوية المسكنة, أخرى" ="rest,analgesics,others","النوم أو الراحة, التدليك"="rest,massage","النوم أو الراحة, التدليك, الأدوية المسكنة"="rest,massage,analgesics",
+                        "النوم أو الراحة, التدليك, الأدوية المسكنة, أخرى"="rest,massage,analgesics,others","التدليك, الأدوية المسكنة"="massage,analgesics"),
+         freq=recode(freq,"شهري"="monthly","أسبوعي"="weekly","غير منتظم"="irregular","لا شيء"="nothing"),
+         duration=recode(duration,"أقل من 4 ساعات"="less than 4 hours","أكثر من 4 ساعات"= "more than 4 hours","لا شيء"="nothing"),
+         intensity=recode(intensity,"0: لا يوجد صداع"="nothing","1: صداع خفيف"="light","2: صداع متوسط"="moderate","3: صداع شديد"="severe"),
+         academic_impact=recode(academic_impact,"لا شيء"="nothing","خفيف"="light","متوسط"="moderate","شديد"="severe"))
+```
+
+
+###change ID migraine questionaire from character to number
+
+```{r}
+Migraine<-Migraine %>% 
+  mutate(daily_headache=recode(daily_headache,"no"=0,"yes"=1),
+         gi_distress=recode(gi_distress,"no"=0,"yes"=1),
+         photosensitive=recode(photosensitive,"no"=0,"yes"=1))
+```
+
+
+###create column for ID migraine
+
+```{r}
+Migraine<-Migraine %>%
+  mutate(id_migraine = daily_headache+gi_distress+photosensitive)
+```
+
+###convert id migraine value to positive if A Total score ≥ 2 points is considered a positive diagnostic test for migraine 
+
+```{r}
+Migraine <- Migraine %>%
+  mutate(migraine_test = if_else(id_migraine >= 2, "positive", "negative"))
+
+```
+
+
+
